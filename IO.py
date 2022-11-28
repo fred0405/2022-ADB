@@ -2,6 +2,7 @@ from collections import deque
 from Operation import Operation
 import re
 from Action import Action
+
 class IO:
     def __init__(self, inputFile, outputFile) -> None:
         self.inputFile = inputFile

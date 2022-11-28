@@ -1,17 +1,16 @@
 from collections import deque
 from Action import Action
 from Operation import Operation
-from Transaction import Transaction
-from TransactionStatus import TransactionStatus
+from Transaction import TransactionStatus, Transaction
 from Site import Site
 from IO import IO
 class TransactionManager:
     def __init__(self, operations: deque, idToSites: dict) -> None:
         self.operations = operations
         self.idToTransactions = dict()
-        self.idToSites = idToSites;
-        self.waitingOperations = list();
-        self.waitsForGraph = dict();
+        self.idToSites = idToSites
+        self.waitingOperations = list()
+        self.waitsForGraph = dict()
 
     def simulate(self):
         while self.operations:
@@ -19,25 +18,25 @@ class TransactionManager:
             currAction = currOperation.action
             
             if currAction == Action.BEGIN:
-                self.initTransaction(currOperation);
+                self.initTransaction(currOperation)
                 continue
             elif currAction == Action.BEGIN_RO:
-                self.initROTransaction(currOperation);
+                self.initROTransaction(currOperation)
                 continue
             elif currAction == Action.READ:
-                self.readOrWrite(currOperation);
+                self.readOrWrite(currOperation)
                 continue
             elif currAction == Action.WRITE:
-                self.readOrWrite(currOperation);
+                self.readOrWrite(currOperation)
                 continue
             elif currAction == Action.END:
-                self.end(currOperation);
+                self.end(currOperation)
                 continue
             elif currAction == Action.FAIL:
-                self.fail(currOperation);
+                self.fail(currOperation)
                 continue
             elif currAction == Action.RECOVER:
-                self.recover(currOperation);
+                self.recover(currOperation)
                 continue
             elif currAction == Action.DUMP:
                 self.dump();
@@ -258,8 +257,8 @@ class TransactionManager:
         return False
 
     def abortYoungestTrx(self, visited):
-        youngestTrxId = -1;
-        largestTime = -1;
+        youngestTrxId = -1
+        largestTime = -1
         for trxId in visited:
             trx = self.idToTransactions.get(trxId)
             if trx.beginTime > largestTime:

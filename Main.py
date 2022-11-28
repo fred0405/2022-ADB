@@ -5,25 +5,34 @@ from TransactionManager import *
 from DataType import *
 
 
-def initSites(idToSites):
-    for i in range(1, 11):
-        idToSites[i] = Site(i)
-    for varId in range(1, 21):
-        for siteId in range(1, 11):
-            site = idToSites.get(siteId)
+class DB():
+    NUM_OF_SITES = 10
+    NUM_OF_VARS = 20
 
-            if varId % 2 == 0:
-                site.initVarValues(varId, DataType.REPLICATED)
-            else:
-                targetSiteId = 1 + varId % 10
-                if siteId == targetSiteId:
-                    site.initVarValues(varId, DataType.NON_REPLICATED)
+    def __init__(self):
+        self.sites = {}
+
+        self.init_sites()
+    
+    def init_sites(self):
+        for i in range(1, 1 + self.NUM_OF_SITES):
+            self.sites[i] = Site(i)
+
+        for i in range(1, 1 + self.NUM_OF_VARS):
+            for site_id, site in self.sites.items():
+                if i % 2 == 0:
+                    site.initVarValues(i, DataType.REPLICATED)
+                elif site_id == 1 + i % 10:
+                    site.initVarValues(i, DataType.NON_REPLICATED)
+
+    def run(self, ops):
+        transactionManager = TransactionManager(ops, self.sites)
+        transactionManager.simulate()
 
 
 if __name__ == '__main__':
-    io = IO('./test1.txt', './output1.txt')
+    io = IO('./test/test1', './output1')
     io.parseFile()
-    idToSites = dict()
-    initSites(idToSites)
-    transactionManager = TransactionManager(io.operations, idToSites)
-    transactionManager.simulate()
+
+    db = DB()
+    db.run(io.operations)

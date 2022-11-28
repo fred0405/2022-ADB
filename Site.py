@@ -7,7 +7,7 @@ class Site:
         self.id = id
         self.isDown = False
         self.replicatedVarIds = list()
-        self.nonReplicatedVarIds = list();
+        self.nonReplicatedVarIds = list()
         self.varToCommittedVal = dict()
         self.varToCommittedTime = dict()
         self.varToCurrVal = dict()
