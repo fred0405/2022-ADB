@@ -12,67 +12,28 @@ class TransactionManager:
         self.waitingOperations = list()
         self.waitsForGraph = dict()
 
+        self.action_handlers = {
+            Action.BEGIN: self.initTransaction,
+            Action.BEGIN_RO: self.initROTransaction,
+            Action.READ: self.readOrWrite,
+            Action.WRITE: self.readOrWrite,
+            Action.END: self.end,
+            Action.FAIL: self.fail,
+            Action.RECOVER: self.recover,
+            Action.DUMP: self.dump,
+        }
+
     def start(self) -> None:
         parser = IO()
         while True:
             try:
                 op = parser.parse_line()
-                currAction = op.action
-                if currAction == Action.BEGIN:
-                    self.initTransaction(op)
-                    continue
-                elif currAction == Action.BEGIN_RO:
-                    self.initROTransaction(op)
-                    continue
-                elif currAction == Action.READ:
-                    self.readOrWrite(op)
-                    continue
-                elif currAction == Action.WRITE:
-                    self.readOrWrite(op)
-                    continue
-                elif currAction == Action.END:
-                    self.end(op)
-                    continue
-                elif currAction == Action.FAIL:
-                    self.fail(op)
-                    continue
-                elif currAction == Action.RECOVER:
-                    self.recover(op)
-                    continue
-                elif currAction == Action.DUMP:
-                    self.dump()
             except EOFError:
                 break
-    
-    # def simulate(self):
-    #     while self.operations:
-    #         currOperation = self.operations.popleft()
-    #         currAction = currOperation.action
-            
-    #         if currAction == Action.BEGIN:
-    #             self.initTransaction(currOperation)
-    #             continue
-    #         elif currAction == Action.BEGIN_RO:
-    #             self.initROTransaction(currOperation)
-    #             continue
-    #         elif currAction == Action.READ:
-    #             self.readOrWrite(currOperation)
-    #             continue
-    #         elif currAction == Action.WRITE:
-    #             self.readOrWrite(currOperation)
-    #             continue
-    #         elif currAction == Action.END:
-    #             self.end(currOperation)
-    #             continue
-    #         elif currAction == Action.FAIL:
-    #             self.fail(currOperation)
-    #             continue
-    #         elif currAction == Action.RECOVER:
-    #             self.recover(currOperation)
-    #             continue
-    #         elif currAction == Action.DUMP:
-    #             self.dump()
-    #             continue
+            if not op:
+                continue
+            if op.action in self.action_handlers:
+                self.action_handlers[op.action](op)
 
     def initTransaction(self, operation: Operation):
         trx = Transaction(operation.timeStamp, operation.trxID)
@@ -185,8 +146,8 @@ class TransactionManager:
         varId = operation.varID
         writeToVal = operation.writesToVal
         sb = f'T{trxId} writes x{varId} with value {writeToVal}. Sites affected by the write are: '
-        for site in self.getAvailSitesHoldingVarId(varId):
-            sb += str(site.id) + ' '
+        site_ids = [s.id for s in self.getAvailSitesHoldingVarId(varId)]
+        sb += ' '.join([str(sid) for sid in sorted(site_ids)])
         print(sb)
 
     def canWrite(self, varId, trxId):
@@ -378,10 +339,10 @@ class TransactionManager:
         for site in self.idToSites.values():
             site.lockManager.releaseAllLocks(trxId)
 
-    def commitValue(self, trxId, currTime, committedWrittenVarIds):
+    def commitValue(self, txn_id, currTime, committedWrittenVarIds):
         for site in self.idToSites.values():
             committedWrittenVarIds.update(site.writtenVarIds)
-            site.commitValue(trxId, currTime)
+            site.commitValue(txn_id, currTime)
 
     def revertValue(self, trxId):
         for site in self.idToSites.values():
@@ -405,7 +366,7 @@ class TransactionManager:
         site.recover(currTime)
         print(f'Site {siteId} recovers')
 
-    def dump(self):
+    def dump(self, operation):
         for site in self.idToSites.values():
             varToCommittedVal = site.varToCommittedVal
             sb = ""

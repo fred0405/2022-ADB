@@ -30,12 +30,15 @@ class IO:
 
     def parse_line(self) -> Operation:
         line = input()
+        # remove comments
+        line = line.split('//')[0]
         if not line or not line.strip():
             return None
         tokens = re.split('\(|\)|,', line)
         tokens = [t.strip() for t in tokens if t.strip()]
         action = tokens[0]
         op = Operation()
+        op.timeStamp = self.currentTime
         if action == 'begin':
             op.action = Action.BEGIN
             op.trxID = self.getNum(tokens[1])

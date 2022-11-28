@@ -35,17 +35,25 @@ class Site:
         self.visitedTrxIds.add(trxId)
         self.writtenVarIds.add(varId)
 
-    def commitValue(self, trxId: int, currTime: int):
+    def commitValue(self, txn_id: int, currTime: int):
         if self.isDown:
             return 
-        lockVariables = self.lockManager.getLockedVariables(trxId);
+        lockVariables = self.lockManager.getLockedVariables(txn_id)
         for varId in lockVariables:
             self.varToCommittedVal[varId] = self.varToCurrVal.get(varId)
             self.varToCommittedTime[varId] = currTime
-        self.visitedTrxIds.remove(trxId)
 
+        # Remove trxId from visitedTrxIds (Used for fail site. When site fails, this
+        # transaction is no longer affected).
+        if txn_id in self.visitedTrxIds:
+            self.visitedTrxIds.remove(txn_id)
+
+        # Remove varIds which transaction modified from lockManager's
+        # varsWaitingForCommittedWrites and clear writtenVarIds. (Used for recovery
+        # site release read locks)
         for varId in self.writtenVarIds:
-            self.lockManager.varsWaitingForCommittedWrites.remove(varId)
+            if varId in self.lockManager.varsWaitingForCommittedWrites:
+                self.lockManager.varsWaitingForCommittedWrites.remove(varId)
         self.writtenVarIds.clear()
 
     def fail(self, timeStamp: int):
