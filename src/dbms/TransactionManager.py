@@ -329,7 +329,7 @@ class TransactionManager:
         for lockedVarId in lockedVarIds:
             for op in self.waitingOperations:
                 if op.varID == lockedVarId and op not in opsToWakeUp:
-                    opsToWakeUp.appendleft(op)
+                    opsToWakeUp.append(op)
         if not opsToWakeUp:
             return
         for op in opsToWakeUp:
