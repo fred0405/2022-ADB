@@ -1,9 +1,7 @@
-import sys
-from IO import *
-from Site import *
-from TransactionManager import *
-from DataType import *
-
+from dbms.IO import IO
+from dbms.site import Site
+from dbms.TransactionManager import TransactionManager
+from dbms.constants import DataType
 
 class DB():
     NUM_OF_SITES = 10
@@ -31,7 +29,7 @@ class DB():
 
 
 if __name__ == '__main__':
-    io = IO('./test/test1', './output1')
+    io = IO('./test/test1')
     io.parseFile()
 
     db = DB()

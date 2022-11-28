@@ -1,6 +1,7 @@
-from LockManager import LockManager
-from DataType import DataType
-from Interval import Interval
+from .LockManager import LockManager
+from .constants import DataType
+from .Interval import Interval
+
 class Site:
     def __init__(self, id: int) -> None:
         self.lockManager = LockManager()

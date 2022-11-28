@@ -1,9 +1,9 @@
 from collections import deque
-from Action import Action
-from Operation import Operation
-from Transaction import TransactionStatus, Transaction
-from Site import Site
-from IO import IO
+
+from .constants import Action
+from .IO import Operation
+from .Transaction import TransactionStatus, Transaction
+
 class TransactionManager:
     def __init__(self, operations: deque, idToSites: dict) -> None:
         self.operations = operations
@@ -382,8 +382,6 @@ class TransactionManager:
                 sb += delim + 'x' + str(varId) + ': ' + str(varToCommittedVal.get(varId))
                 delim = ', '
             print(f'site {site.id} - {sb}')
-    
-    
     
     def printWaitsForGraph(self):
         sb = ''

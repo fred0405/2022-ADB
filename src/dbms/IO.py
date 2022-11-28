@@ -1,12 +1,30 @@
 from collections import deque
-from Operation import Operation
 import re
-from Action import Action
+
+from .constants import Action
+
+class Operation:
+    def __init__(self) -> None:
+        self.timeStamp = None
+        self.action = None
+        self.trxID = None
+        self.varID = None
+        self.siteID = None
+        self.writesToVal = None
+
+    def __repr__(self) -> str:
+        ret = ''
+        ret += f'Timestamp: {self.timeStamp} \n'
+        ret += f'Action: {self.action} \n'
+        ret += f'Trx ID: {self.trxID} \n'
+        ret += f'Var ID: {self.varID} \n'
+        ret += f'Site ID: {self.siteID} \n'
+        ret += f'Write value: {self.writesToVal} \n'
+        return ret
 
 class IO:
-    def __init__(self, inputFile, outputFile) -> None:
+    def __init__(self, inputFile) -> None:
         self.inputFile = inputFile
-        self.outputFile = outputFile
         self.currentTime = 0
         self.operations = deque()
 
@@ -55,18 +73,11 @@ class IO:
                 operation.action = Action.DUMP
             self.operations.append(operation)
             self.currentTime += 1
-            
-            
-        
         f.close()
+
     def getNum(self, s):
         for i in range(len(s)):
             if not s[i].isdigit():
                 continue
             return int(s[i:])
         return -1
-            
-    def writeToFile(self, s):
-        with open(self.outputFile, 'a') as f:
-            f.write(s)
-

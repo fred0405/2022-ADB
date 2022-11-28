@@ -1,5 +1,9 @@
 from enum import Enum
 
+class DataType(Enum):
+    NON_REPLICATED = 1
+    REPLICATED = 2
+
 class Action(Enum):
     BEGIN = 1
     BEGIN_RO = 2
