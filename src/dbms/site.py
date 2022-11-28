@@ -7,6 +7,7 @@ class Site:
         self.lockManager = LockManager()
         self.id = id
         self.isDown = False
+
         self.replicatedVarIds = list()
         self.nonReplicatedVarIds = list()
         self.varToCommittedVal = dict()
@@ -31,6 +32,7 @@ class Site:
         return self.varToCurrVal.get(varId)
 
     def writeValue(self, varId: int, writeToVal: int, trxId: int):
+        #print("///write site", self.id, varId, writeToVal, trxId)
         self.varToCurrVal[varId] = writeToVal
         self.visitedTrxIds.add(trxId)
         self.writtenVarIds.add(varId)
@@ -39,7 +41,9 @@ class Site:
         if self.isDown:
             return 
         lockVariables = self.lockManager.getLockedVariables(txn_id)
+        #print('///locked ', txn_id, lockVariables)
         for varId in lockVariables:
+            #print("////", self.id, varId, self.varToCurrVal.get(varId))
             self.varToCommittedVal[varId] = self.varToCurrVal.get(varId)
             self.varToCommittedTime[varId] = currTime
 

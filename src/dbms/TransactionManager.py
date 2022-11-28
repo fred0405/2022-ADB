@@ -5,8 +5,8 @@ from .IO import Operation, IO
 from .Transaction import Transaction
 
 class TransactionManager:
-    def __init__(self, operations: deque, idToSites: dict) -> None:
-        self.operations = operations
+    def __init__(self, idToSites: dict) -> None:
+        self.pending_operations = deque()
         self.idToTransactions = dict()
         self.idToSites = idToSites
         self.waitingOperations = list()
@@ -26,6 +26,11 @@ class TransactionManager:
     def start(self) -> None:
         parser = IO()
         while True:
+            if self.pending_operations:
+                ops_todo = self.pending_operations
+                self.pending_operations = []
+                for pending_op in ops_todo:
+                    self._handle_operation(pending_op)
             try:
                 op = parser.parse_line()
             except EOFError:
@@ -33,7 +38,10 @@ class TransactionManager:
             if not op:
                 continue
             if op.action in self.action_handlers:
-                self.action_handlers[op.action](op)
+                self._handle_operation(op)
+
+    def _handle_operation(self, op: Operation) -> None:
+        self.action_handlers[op.action](op)
 
     def initTransaction(self, operation: Operation):
         trx = Transaction(operation.timeStamp, operation.trxID)
@@ -131,10 +139,12 @@ class TransactionManager:
         varId = operation.varID
         writeToVal = operation.writesToVal
         if self.canWrite(varId, trxId):
+            # print("[OK_TO_WRITE]", operation)
             self.addWriteLock(varId, trxId)
             self.writeValue(varId, writeToVal, trxId)
             self.printSitesAffectedByTheWrite(operation)
         else:
+            print("[WRITE_ON_HOLD]", operation)
             self.putOperationOnHold(operation)
 
     def writeValue(self, varId, writeToVal, trxId):
@@ -170,16 +180,21 @@ class TransactionManager:
         trxId = operation.trxID
         varId = operation.varID
         availSites = self.getAvailSitesHoldingVarId(varId)
+
+        # (1) no site is available
         if not availSites:
             self.waitingOperations.append(operation)
             print(f'T{trxId} waits because all sites holding the variable are down')
             return
 
+        # (2) operation in recovered site which waiting for committed write
         if operation.action == Action.READ:
             for site in availSites:
                 if varId in site.lockManager.varsWaitingForCommittedWrites:
                     print(f'T{trxId} waits because x{varId} is waiting committed write takes place on the site')
                     break
+        
+        # (3) operation should execute after some of waiting operations
         shouldWait = False
         for site in availSites:
             lockManager = site.lockManager
@@ -193,18 +208,19 @@ class TransactionManager:
                     print(f'T{trxId} waits because it cannot skip T {op.trxID}')
                     shouldWait = True
                     break
-            self.waitingOperations.append(operation)
-            locked = False
-            lockHolders = self.getLockHolders(operation)
-            if lockHolders:
-                for lockedId in lockHolders:
-                    if lockedId not in self.waitsForGraph:
-                        self.waitsForGraph[lockedId] = set()
-                    self.waitsForGraph[lockedId].add(trxId)
-                    locked = True
-            if locked:
-                print(f'T{trxId} waits because of lock conflict')
-            self.printWaitsForGraph()
+        # (4) operation is on hold because of lock conflict
+        self.waitingOperations.append(operation)
+        locked = False
+        lockHolders = self.getLockHolders(operation)
+        if lockHolders:
+            for lockedId in lockHolders:
+                if lockedId not in self.waitsForGraph:
+                    self.waitsForGraph[lockedId] = set()
+                self.waitsForGraph[lockedId].add(trxId)
+                locked = True
+        if locked:
+            print('[LOCK_CONFLICT]', f'T{trxId} waits for T{lockHolders}')
+        self.printWaitsForGraph()
 
     def getAvailSitesHoldingVarId(self, varId):
         ret = set()
@@ -216,6 +232,7 @@ class TransactionManager:
     def getLockHolders(self, operation: Operation):
         lockHolders = set()
         varId = operation.varID
+        txn_id = operation.trxID
         sites = self.getAvailSitesHoldingVarId(varId)
         for site in sites:
             lockManager = site.lockManager
@@ -226,8 +243,9 @@ class TransactionManager:
                 lockHolders.update(readLocks[varId])
             
             if varId in writeLocks:
-                lockHolders.update(writeLocks[varId])
-        lockHolders.remove(operation.trxID)
+                lockHolders.add(writeLocks[varId])
+        if txn_id in lockHolders:
+            lockHolders.remove(txn_id)
         return lockHolders
 
     def detectDeadLock(self):
@@ -257,7 +275,7 @@ class TransactionManager:
             if trx.beginTime > largestTime:
                 largestTime = trx.beginTime
                 youngestTrxId = trxId
-        print("DeadLoock detected")
+        print('[DEADLOCK_DETECTED]', f'kill youngest transaction T{youngestTrxId}')
         self.abort(youngestTrxId)
 
     def end(self, operation: Operation):
@@ -311,17 +329,18 @@ class TransactionManager:
             for op in self.waitingOperations:
                 if op.varID == lockedVarId and op not in opsToWakeUp:
                     opsToWakeUp.appendleft(op)
-
+        if not opsToWakeUp:
+            return
         for op in opsToWakeUp:
-            # TODO
-            print('[TODO] wakeup operation {}'.format(op))
-            # self.waitingOperations.remove(op)
-            # self.operations.append(op)
+            print('[WAKE_UP_OP]', op)
+            self.waitingOperations.remove(op)
+            self.pending_operations.append(op)
         
     def removeFromWaitsForGraph(self, trxId):
         emptyTrx = list()
         for key, value in self.waitsForGraph.items():
-            value.remove(trxId)
+            if trxId in value:
+                value.remove(trxId)
             if len(value) == 0:
                 emptyTrx.append(key)
         for key in emptyTrx:

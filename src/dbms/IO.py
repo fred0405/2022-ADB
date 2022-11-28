@@ -13,14 +13,17 @@ class Operation:
         self.writesToVal = None
 
     def __repr__(self) -> str:
-        ret = ''
-        ret += f'Timestamp: {self.timeStamp} \n'
-        ret += f'Action: {self.action} \n'
-        ret += f'Trx ID: {self.trxID} \n'
-        ret += f'Var ID: {self.varID} \n'
-        ret += f'Site ID: {self.siteID} \n'
-        ret += f'Write value: {self.writesToVal} \n'
-        return ret
+        ret = '('
+        ret += f'Time:{self.timeStamp} {self.action}'
+        if self.trxID is not None:
+            ret += f' Txn:{self.trxID}'
+        if self.varID is not None:
+            ret += f' Var:{self.varID}'
+        if self.siteID is not None:
+            ret += f' Site:{self.siteID}'
+        if self.writesToVal is not None:
+            ret += f' Write_val:{self.writesToVal}'
+        return ret + ')'
 
 class IO:
     def __init__(self) -> None:

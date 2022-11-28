@@ -26,12 +26,11 @@ class DB():
                     # (i.e. 1 + (index_number mod 10) )
                     site.initVarValues(i, DataType.NON_REPLICATED)
 
-    def run(self, ops):
-        transactionManager = TransactionManager(ops, self.sites)
+    def run(self):
+        transactionManager = TransactionManager(self.sites)
 
         transactionManager.start()
 
 if __name__ == '__main__':
-    io = IO()
     db = DB()
-    db.run(io.operations)
+    db.run()
