@@ -1,11 +1,4 @@
-from enum import Enum
-
-class TransactionStatus(Enum):
-    ACTIVE = 1
-    WAITING = 2
-    COMMITTED = 3
-    ABORTED = 4
-    SHOULD_ABORTED = 5
+from .constants import TransactionStatus
 
 class Transaction:
     def __init__(self, beginTime: int, id: int) -> None:

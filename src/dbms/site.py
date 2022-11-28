@@ -21,6 +21,7 @@ class Site:
             self.replicatedVarIds.append(varId)
         else:
             self.nonReplicatedVarIds.append(varId)
+        
         self.varToCommittedVal[varId] = varId * 10
         self.varToCommittedTime[varId] = 0
         self.varToCurrVal[varId] = varId * 10
@@ -32,7 +33,7 @@ class Site:
     def writeValue(self, varId: int, writeToVal: int, trxId: int):
         self.varToCurrVal[varId] = writeToVal
         self.visitedTrxIds.add(trxId)
-        self.writtenVarIds.add(varId);
+        self.writtenVarIds.add(varId)
 
     def commitValue(self, trxId: int, currTime: int):
         if self.isDown:

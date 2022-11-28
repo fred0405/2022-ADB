@@ -1,8 +1,8 @@
 from collections import deque
 
-from .constants import Action
-from .IO import Operation
-from .Transaction import TransactionStatus, Transaction
+from .constants import Action, TransactionStatus
+from .IO import Operation, IO
+from .Transaction import Transaction
 
 class TransactionManager:
     def __init__(self, operations: deque, idToSites: dict) -> None:
@@ -12,35 +12,67 @@ class TransactionManager:
         self.waitingOperations = list()
         self.waitsForGraph = dict()
 
-    def simulate(self):
-        while self.operations:
-            currOperation = self.operations.popleft()
-            currAction = currOperation.action
+    def start(self) -> None:
+        parser = IO()
+        while True:
+            try:
+                op = parser.parse_line()
+                currAction = op.action
+                if currAction == Action.BEGIN:
+                    self.initTransaction(op)
+                    continue
+                elif currAction == Action.BEGIN_RO:
+                    self.initROTransaction(op)
+                    continue
+                elif currAction == Action.READ:
+                    self.readOrWrite(op)
+                    continue
+                elif currAction == Action.WRITE:
+                    self.readOrWrite(op)
+                    continue
+                elif currAction == Action.END:
+                    self.end(op)
+                    continue
+                elif currAction == Action.FAIL:
+                    self.fail(op)
+                    continue
+                elif currAction == Action.RECOVER:
+                    self.recover(op)
+                    continue
+                elif currAction == Action.DUMP:
+                    self.dump()
+            except EOFError:
+                break
+    
+    # def simulate(self):
+    #     while self.operations:
+    #         currOperation = self.operations.popleft()
+    #         currAction = currOperation.action
             
-            if currAction == Action.BEGIN:
-                self.initTransaction(currOperation)
-                continue
-            elif currAction == Action.BEGIN_RO:
-                self.initROTransaction(currOperation)
-                continue
-            elif currAction == Action.READ:
-                self.readOrWrite(currOperation)
-                continue
-            elif currAction == Action.WRITE:
-                self.readOrWrite(currOperation)
-                continue
-            elif currAction == Action.END:
-                self.end(currOperation)
-                continue
-            elif currAction == Action.FAIL:
-                self.fail(currOperation)
-                continue
-            elif currAction == Action.RECOVER:
-                self.recover(currOperation)
-                continue
-            elif currAction == Action.DUMP:
-                self.dump();
-                continue
+    #         if currAction == Action.BEGIN:
+    #             self.initTransaction(currOperation)
+    #             continue
+    #         elif currAction == Action.BEGIN_RO:
+    #             self.initROTransaction(currOperation)
+    #             continue
+    #         elif currAction == Action.READ:
+    #             self.readOrWrite(currOperation)
+    #             continue
+    #         elif currAction == Action.WRITE:
+    #             self.readOrWrite(currOperation)
+    #             continue
+    #         elif currAction == Action.END:
+    #             self.end(currOperation)
+    #             continue
+    #         elif currAction == Action.FAIL:
+    #             self.fail(currOperation)
+    #             continue
+    #         elif currAction == Action.RECOVER:
+    #             self.recover(currOperation)
+    #             continue
+    #         elif currAction == Action.DUMP:
+    #             self.dump()
+    #             continue
 
     def initTransaction(self, operation: Operation):
         trx = Transaction(operation.timeStamp, operation.trxID)
@@ -320,8 +352,10 @@ class TransactionManager:
                     opsToWakeUp.appendleft(op)
 
         for op in opsToWakeUp:
-            self.waitingOperations.remove(op)
-            self.operations.append(op)
+            # TODO
+            print('[TODO] wakeup operation {}'.format(op))
+            # self.waitingOperations.remove(op)
+            # self.operations.append(op)
         
     def removeFromWaitsForGraph(self, trxId):
         emptyTrx = list()

@@ -7,9 +7,16 @@ class DataType(Enum):
 class Action(Enum):
     BEGIN = 1
     BEGIN_RO = 2
-    WRITE = 3
-    READ = 4
-    FAIL = 5
+    READ = 3
+    WRITE = 4
+    DUMP = 5
     END = 6
-    RECOVER = 7
-    DUMP = 8
+    FAIL = 7
+    RECOVER = 8
+
+class TransactionStatus(Enum):
+    ACTIVE = 1
+    WAITING = 2
+    COMMITTED = 3
+    ABORTED = 4
+    SHOULD_ABORTED = 5
