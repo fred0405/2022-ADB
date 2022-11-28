@@ -192,7 +192,7 @@ class TransactionManager:
         if operation.action == Action.READ:
             for site in availSites:
                 if varId in site.lockManager.varsWaitingForCommittedWrites:
-                    print(f'T{trxId} waits because x{varId} is waiting committed write takes place on the site')
+                    print('[WAIT_FOR_COMMIT]', f'T{trxId} waits because x{varId} is waiting for committed write at site {site.id}')
                     break
         
         # (3) operation should execute after some of waiting operations
@@ -305,11 +305,15 @@ class TransactionManager:
     def commitOrAbort(self, trxId, shouldCommit, currTime):
         if shouldCommit and currTime == None:
             return
+        
+        # (1) Remove transaction in waitsForGraph
         self.removeFromWaitsForGraph(trxId)
         temp = []
         for op in self.waitingOperations:
             if op.trxID == trxId:
                 temp.append(op)
+        
+        # (2) Remove transaction in waiting operation
         for op in temp:
             self.waitingOperations.remove(op)
         del temp
@@ -321,7 +325,10 @@ class TransactionManager:
             self.revertValue(trxId)
         
         lockedVarIds = self.getLockVariables(trxId)
+        lockedVarIds.update(committedWrittenVarIds)
+        # (3) release transaction's locks
         self.releaseAllLocks(trxId)
+        # (4) wake up waiting operations
         self.wakeUpWaitingOperations(lockedVarIds)
 
     def wakeUpWaitingOperations(self, lockedVarIds):
@@ -377,8 +384,12 @@ class TransactionManager:
         affected_txns = []
         for trx in self.idToTransactions.values():
             if trx.id in site.visitedTrxIds:
-                trx.status = TransactionStatus.SHOULD_ABORTED
-                affected_txns.append(trx.id)
+                if trx.status == TransactionStatus.ABORTED:
+                    # txn already aborted
+                    site.visitedTrxIds.remove(trx.id)
+                else:
+                    trx.status = TransactionStatus.SHOULD_ABORTED
+                    affected_txns.append(trx.id)
         print('[INFO]', f'Site {siteId} is down')
         if affected_txns:
             print('[AFFECTED_TXNS]', f'T{affected_txns} should abort')

@@ -41,9 +41,7 @@ class Site:
         if self.isDown:
             return 
         lockVariables = self.lockManager.getLockedVariables(txn_id)
-        #print('///locked ', txn_id, lockVariables)
         for varId in lockVariables:
-            #print("////", self.id, varId, self.varToCurrVal.get(varId))
             self.varToCommittedVal[varId] = self.varToCurrVal.get(varId)
             self.varToCommittedTime[varId] = currTime
 
