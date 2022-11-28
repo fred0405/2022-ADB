@@ -63,7 +63,7 @@ class TransactionManager:
             for varId in site.replicatedVarIds:
                 committedTime = site.varToCommittedTime.get(varId)
                 if not site.isSiteFailInPeriod(committedTime, currTime) and varId not in data:
-                    data[varId] = site.varToCommittedVal
+                    data[varId] = site.varToCommittedVal.get(varId)
         trx.data = data
         self.idToTransactions[trx.id] = trx
         print(f'T{trx.id} begins as a read-only transaction')
@@ -96,11 +96,12 @@ class TransactionManager:
         trxId = operation.trxID
         varId = operation.varID
         trx = self.idToTransactions.get(trxId)
+
         if len(trx.data) != 0 and varId in trx.data:
-            print(f'T{trx.id} reads x{varId}: {trx.data.get(varId)}')
+            print(f'T{trx.id} reads x{varId}: {trx.data[varId]}')
         else:
             print(f'T{trxId} can\'t read x{varId} because no valid version is available')
-            self.abort(trxId);
+            self.abort(trxId)
 
     def readValue(self, operation: Operation):
         trxId = operation.trxID
