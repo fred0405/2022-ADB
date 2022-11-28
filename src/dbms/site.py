@@ -70,7 +70,7 @@ class Site:
     def recover(self, timeStamp: int):
         self.isDown = False
         self.lockManager.varsWaitingForCommittedWrites.update(self.replicatedVarIds)
-        if len(self.terminatedIntervals) != 0 and self.terminatedIntervals[-1].isCloeds:
+        if len(self.terminatedIntervals) != 0 and self.terminatedIntervals[-1].isClosed:
             self.terminatedIntervals[-1].endTime = timeStamp - 1
 
     def isSiteFailInPeriod(self, startTime: int, endTime: int):

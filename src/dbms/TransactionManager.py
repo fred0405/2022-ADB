@@ -46,7 +46,7 @@ class TransactionManager:
     def initTransaction(self, operation: Operation):
         trx = Transaction(operation.timeStamp, operation.trxID)
         self.idToTransactions[trx.id] = trx
-        print(f'T{trx.id} begins')
+        print('[INFO]', f'T{trx.id} begins')
 
     def initROTransaction(self, operation: Operation):
         currTime = operation.timeStamp
@@ -66,12 +66,12 @@ class TransactionManager:
                     data[varId] = site.varToCommittedVal.get(varId)
         trx.data = data
         self.idToTransactions[trx.id] = trx
-        print(f'T{trx.id} begins as a read-only transaction')
+        print('[INFO]', f'T{trx.id} begins as a read-only transaction')
  
     def readOrWrite(self, operation: Operation):
         trx = self.idToTransactions.get(operation.trxID)
         if trx.status == TransactionStatus.ABORTED or trx.status == TransactionStatus.SHOULD_ABORTED:
-            print(f'T{trx.id} can\'t be executed because it is aborted or will be aborted')
+            print('[RW_FAIL]', f'T{trx.id} can\'t be executed because it is aborted or will be aborted')
             return
         if operation.action == Action.READ:
             self.read(operation)
@@ -98,9 +98,9 @@ class TransactionManager:
         trx = self.idToTransactions.get(trxId)
 
         if len(trx.data) != 0 and varId in trx.data:
-            print(f'T{trx.id} reads x{varId}: {trx.data[varId]}')
+            print('[INFO]', f'T{trx.id} reads x{varId}: {trx.data[varId]}')
         else:
-            print(f'T{trxId} can\'t read x{varId} because no valid version is available')
+            print('[INFO]', f'T{trxId} can\'t read x{varId} because no valid version is available')
             self.abort(trxId)
 
     def readValue(self, operation: Operation):
@@ -108,12 +108,12 @@ class TransactionManager:
         varId = operation.varID
         sites = self.getAvailSitesHoldingVarId(varId)
         if not sites:
-            print(f'T{trxId} can\'t read x{varId} because all sites holding the variable are down')
+            print('[READ_FAIL]', f'T{trxId} can\'t read x{varId} because all sites holding the variable are down')
             self.abort(trxId)
         else:
             site = sites[0]
             readVal = site.readValue(varId, trxId)
-            print(f'T{trxId} reads x{varId}: {readVal}')
+            print('[INFO]', f'T{trxId} reads x{varId}: {readVal}')
 
     def canRead(self, varId, trxId):
         sites = self.getAvailSitesHoldingVarId(varId)
@@ -156,10 +156,10 @@ class TransactionManager:
         trxId = operation.trxID
         varId = operation.varID
         writeToVal = operation.writesToVal
-        sb = f'T{trxId} writes x{varId} with value {writeToVal}. Sites affected by the write are: '
+        sb = f'T{trxId} writes x{varId}: {writeToVal} to site(s): '
         site_ids = [s.id for s in self.getAvailSitesHoldingVarId(varId)]
         sb += ' '.join([str(sid) for sid in sorted(site_ids)])
-        print(sb)
+        print('[INFO]', sb)
 
     def canWrite(self, varId, trxId):
         sites = self.getAvailSitesHoldingVarId(varId)
@@ -294,13 +294,13 @@ class TransactionManager:
         trx = self.idToTransactions.get(trxId)
         trx.status = TransactionStatus.COMMITTED
         self.commitOrAbort(trxId, True, currTime)
-        print(f'T{trxId} commits')
+        print('[INFO]', f'T{trxId} commits')
 
     def abort(self, trxId):
         trx = self.idToTransactions.get(trxId)
         trx.status = TransactionStatus.ABORTED
         self.commitOrAbort(trxId, False, None)
-        print(f'T{trxId} aborts')
+        print('[INFO]', f'T{trxId} aborts')
     
     def commitOrAbort(self, trxId, shouldCommit, currTime):
         if shouldCommit and currTime == None:
@@ -374,17 +374,21 @@ class TransactionManager:
 
         site = self.idToSites.get(siteId)
         site.fail(currTime)
+        affected_txns = []
         for trx in self.idToTransactions.values():
             if trx.id in site.visitedTrxIds:
                 trx.status = TransactionStatus.SHOULD_ABORTED
-        print(f'Site {siteId} is down')
+                affected_txns.append(trx.id)
+        print('[INFO]', f'Site {siteId} is down')
+        if affected_txns:
+            print('[AFFECTED_TXNS]', f'T{affected_txns} should abort')
 
     def recover(self, operation):
         siteId = operation.siteID
         currTime = operation.timeStamp
         site = self.idToSites.get(siteId)
         site.recover(currTime)
-        print(f'Site {siteId} recovers')
+        print('[INFO]', f'Site {siteId} recovers')
 
     def dump(self, operation):
         for site in self.idToSites.values():
