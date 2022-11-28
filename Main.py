@@ -16,7 +16,7 @@ def initSites(idToSites):
                 site.initVarValues(varId, DataType.REPLICATED)
             else:
                 targetSiteId = 1 + varId % 10
-                if site == targetSiteId:
+                if siteId == targetSiteId:
                     site.initVarValues(varId, DataType.NON_REPLICATED)
 
 
