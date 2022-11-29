@@ -221,7 +221,7 @@ class TransactionManager:
                 locked = True
         if locked:
             print('[LOCK_CONFLICT]', f'T{trxId} waits for T{lockHolders}')
-        self.printWaitsForGraph()
+        # self.printWaitsForGraph()
 
     def getAvailSitesHoldingVarId(self, varId):
         ret = set()
@@ -354,7 +354,7 @@ class TransactionManager:
         for key in emptyTrx:
             self.waitsForGraph.pop(key, None)
         self.waitsForGraph.pop(trxId, None)
-        self.printWaitsForGraph()
+        # self.printWaitsForGraph()
 
     def getLockVariables(self, trxId):
         lockVariable = set()
@@ -413,16 +413,16 @@ class TransactionManager:
                 delim = ', '
             print(f'site {site.id} - {sb}')
     
-    def printWaitsForGraph(self):
-        sb = ''
-        sb += 'Size of waitsForGraph: ' + str(len(self.waitsForGraph)) + '\n'
-        sb += '-----------------------------------------\n'
-        for trxId in self.waitsForGraph.keys():
-            sb += str(trxId) + ': '
-            for waitingTrx in self.waitsForGraph.get(trxId):
-                sb += str(waitingTrx) + ' '
-            sb += '\n'
-        sb += '-----------------------------------------\n'
+    # def printWaitsForGraph(self):
+    #     sb = ''
+    #     sb += 'Size of waitsForGraph: ' + str(len(self.waitsForGraph)) + '\n'
+    #     sb += '-----------------------------------------\n'
+    #     for trxId in self.waitsForGraph.keys():
+    #         sb += str(trxId) + ': '
+    #         for waitingTrx in self.waitsForGraph.get(trxId):
+    #             sb += str(waitingTrx) + ' '
+    #         sb += '\n'
+    #     sb += '-----------------------------------------\n'
 
 
     
