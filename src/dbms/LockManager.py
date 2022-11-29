@@ -15,7 +15,7 @@ class LockManager:
     def canWrite(self, varId, trxId):
         if varId in self.writeLocks and self.writeLocks[varId] != trxId:
             return False
-        if varId in self.writeLocks:
+        if varId in self.readLocks:
             blockTrxIds = self.readLocks.get(varId, set())
             return len(blockTrxIds) == 1 and trxId in blockTrxIds
         return True

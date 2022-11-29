@@ -185,7 +185,7 @@ class TransactionManager:
         # (1) no site is available
         if not availSites:
             self.waitingOperations.append(operation)
-            print(f'T{trxId} waits because all sites holding the variable are down')
+            print('[NO_AVAIL_SITE]', f'T{trxId} waits because all sites holding the variable are down')
             return
 
         # (2) operation in recovered site which waiting for committed write
@@ -206,7 +206,7 @@ class TransactionManager:
                     if op.trxID not in self.waitsForGraph:
                         self.waitsForGraph[op.trxID] = set()
                     self.waitsForGraph[op.trxID].add(trxId)
-                    print(f'T{trxId} waits because it cannot skip T {op.trxID}')
+                    print('[ON_HOLD_WAIT]', f'T{trxId} waits because it cannot skip T{op.trxID}')
                     shouldWait = True
                     break
         # (4) operation is on hold because of lock conflict
@@ -242,9 +242,9 @@ class TransactionManager:
 
             if varId in readLocks:
                 lockHolders.update(readLocks[varId])
-            
             if varId in writeLocks:
                 lockHolders.add(writeLocks[varId])
+
         if txn_id in lockHolders:
             lockHolders.remove(txn_id)
         return lockHolders
