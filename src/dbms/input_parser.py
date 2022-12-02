@@ -5,30 +5,29 @@ from .constants import Action
 
 class Operation:
     def __init__(self) -> None:
-        self.timeStamp = None
+        self.timestamp = None
         self.action = None
-        self.trxID = None
-        self.varID = None
-        self.siteID = None
-        self.writesToVal = None
+        self.txn_id = None
+        self.var_id = None
+        self.site_id = None
+        self.var_val = None
 
     def __repr__(self) -> str:
         ret = '('
-        ret += f'Time:{self.timeStamp} {self.action}'
-        if self.trxID is not None:
-            ret += f' Txn:{self.trxID}'
-        if self.varID is not None:
-            ret += f' Var:{self.varID}'
-        if self.siteID is not None:
-            ret += f' Site:{self.siteID}'
-        if self.writesToVal is not None:
-            ret += f' Write_val:{self.writesToVal}'
+        ret += f'Time:{self.timestamp} {self.action}'
+        if self.txn_id is not None:
+            ret += f' Txn:{self.txn_id}'
+        if self.var_id is not None:
+            ret += f' Var:{self.var_id}'
+        if self.site_id is not None:
+            ret += f' Site:{self.site_id}'
+        if self.var_val is not None:
+            ret += f' Write_var_val:{self.var_val}'
         return ret + ')'
 
 class Parser:
     def __init__(self) -> None:
-        self.inputFile = ''
-        self.currentTime = 0
+        self.current_time = 0
         self.operations = deque()
 
     def parse_line(self) -> Operation:
@@ -37,41 +36,42 @@ class Parser:
         line = line.split('//')[0]
         if not line or not line.strip():
             return None
+        
         tokens = re.split('\(|\)|,', line)
         tokens = [t.strip() for t in tokens if t.strip()]
         action = tokens[0]
         op = Operation()
-        op.timeStamp = self.currentTime
+        op.timestamp = self.current_time
         if action == 'begin':
             op.action = Action.BEGIN
-            op.trxID = self.getNum(tokens[1])
+            op.txn_id = self.read_num(tokens[1])
         elif action == "beginRO":
             op.action = Action.BEGIN_RO
-            op.trxID = self.getNum(tokens[1])
+            op.txn_id = self.read_num(tokens[1])
         elif action == "end":
             op.action = Action.END
-            op.trxID = self.getNum(tokens[1])
+            op.txn_id = self.read_num(tokens[1])
         elif action == "W":
             op.action = Action.WRITE
-            op.trxID = self.getNum(tokens[1])
-            op.varID = self.getNum(tokens[2])
-            op.writesToVal = self.getNum(tokens[3])
+            op.txn_id = self.read_num(tokens[1])
+            op.var_id = self.read_num(tokens[2])
+            op.var_val = self.read_num(tokens[3])
         elif action == "R":
             op.action = Action.READ
-            op.trxID = self.getNum(tokens[1])
-            op.varID = self.getNum(tokens[2])
+            op.txn_id = self.read_num(tokens[1])
+            op.var_id = self.read_num(tokens[2])
         elif action == "fail":
             op.action = Action.FAIL
-            op.siteID = self.getNum(tokens[1])
+            op.site_id = self.read_num(tokens[1])
         elif action == "recover":
             op.action = Action.RECOVER
-            op.siteID = self.getNum(tokens[1])
+            op.site_id = self.read_num(tokens[1])
         elif action == "dump":
             op.action = Action.DUMP
-        self.currentTime += 1
+        self.current_time += 1
         return op
 
-    def getNum(self, s):
+    def read_num(self, s):
         for i in range(len(s)):
             if not s[i].isdigit():
                 continue

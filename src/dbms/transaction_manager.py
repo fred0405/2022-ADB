@@ -52,13 +52,13 @@ class TransactionManager:
         self.action_handlers[op.action](op)
 
     def initTransaction(self, operation: Operation):
-        trx = Transaction(operation.timeStamp, operation.trxID)
+        trx = Transaction(operation.timestamp, operation.txn_id)
         self.idToTransactions[trx.id] = trx
         print('[INFO]', f'T{trx.id} begins')
 
     def initROTransaction(self, operation: Operation):
-        currTime = operation.timeStamp
-        trx = Transaction(currTime, operation.trxID)
+        currTime = operation.timestamp
+        trx = Transaction(currTime, operation.txn_id)
         trx.isReadyOnly = True
         
         data = dict()
@@ -77,7 +77,7 @@ class TransactionManager:
         print('[INFO]', f'T{trx.id} begins as a read-only transaction')
  
     def readOrWrite(self, operation: Operation):
-        trx = self.idToTransactions.get(operation.trxID)
+        trx = self.idToTransactions.get(operation.txn_id)
         if trx.status == TransactionStatus.ABORTED or trx.status == TransactionStatus.SHOULD_ABORTED:
             print('[RW_FAIL]', f'T{trx.id} can\'t be executed because it is aborted or will be aborted')
             return
@@ -88,12 +88,12 @@ class TransactionManager:
         self.detectDeadLock()
 
     def read(self, operation: Operation):
-        trxId = operation.trxID
+        trxId = operation.txn_id
         trx = self.idToTransactions.get(trxId)
         if trx.isReadyOnly:
             self.readROValue(operation)
             return
-        varId = operation.varID
+        varId = operation.var_id
         if self.canRead(varId, trxId):
             self.readValue(operation)
             self.addReadLock(varId, trxId)
@@ -101,8 +101,8 @@ class TransactionManager:
             self.putOperationOnHold(operation)
 
     def readROValue(self, operation: Operation):
-        trxId = operation.trxID
-        varId = operation.varID
+        trxId = operation.txn_id
+        varId = operation.var_id
         trx = self.idToTransactions.get(trxId)
 
         if len(trx.data) != 0 and varId in trx.data:
@@ -112,8 +112,8 @@ class TransactionManager:
             self.abort(trxId)
 
     def readValue(self, operation: Operation):
-        trxId = operation.trxID
-        varId = operation.varID
+        trxId = operation.txn_id
+        varId = operation.var_id
         sites = self.getAvailSitesHoldingVarId(varId)
         if not sites:
             print('[READ_FAIL]', f'T{trxId} can\'t read x{varId} because all sites holding the variable are down')
@@ -133,7 +133,7 @@ class TransactionManager:
             if not lockManager.canRead(varId, trxId):
                 return False
             for op in self.waitingOperations:
-                if op.varID == varId and op.action == Action.WRITE:
+                if op.var_id == varId and op.action == Action.WRITE:
                     return False
             if varId in site.nonReplicatedVarIds or (varId in site.replicatedVarIds and varId not in site.lockManager.varsWaitingForCommittedWrites):
                 canRead = True
@@ -144,9 +144,9 @@ class TransactionManager:
             site.lockManager.addReadLock(varId, trxId)
 
     def write(self, operation: Operation):
-        trxId = operation.trxID
-        varId = operation.varID
-        writeToVal = operation.writesToVal
+        trxId = operation.txn_id
+        varId = operation.var_id
+        writeToVal = operation.var_val
         if self.canWrite(varId, trxId):
             # print("[OK_TO_WRITE]", operation)
             self.addWriteLock(varId, trxId)
@@ -161,9 +161,9 @@ class TransactionManager:
             site.writeValue(varId, writeToVal, trxId)
 
     def printSitesAffectedByTheWrite(self, operation: Operation):
-        trxId = operation.trxID
-        varId = operation.varID
-        writeToVal = operation.writesToVal
+        trxId = operation.txn_id
+        varId = operation.var_id
+        writeToVal = operation.var_val
         sb = f'T{trxId} writes x{varId}: {writeToVal} to site(s): '
         site_ids = [s.id for s in self.getAvailSitesHoldingVarId(varId)]
         sb += ' '.join([str(sid) for sid in sorted(site_ids)])
@@ -177,7 +177,7 @@ class TransactionManager:
             if not site.lockManager.canWrite(varId, trxId):
                 return False
             for op in self.waitingOperations:
-                if op.varID == varId and op.action == Action.WRITE:
+                if op.var_id == varId and op.action == Action.WRITE:
                     return False
         return True
 
@@ -186,8 +186,8 @@ class TransactionManager:
             site.lockManager.addWriteLock(varId, trxId)
 
     def putOperationOnHold(self, operation: Operation):
-        trxId = operation.trxID
-        varId = operation.varID
+        trxId = operation.txn_id
+        varId = operation.var_id
         availSites = self.getAvailSitesHoldingVarId(varId)
 
         # (1) no site is available
@@ -210,11 +210,11 @@ class TransactionManager:
             if shouldWait or (not lockManager.canRead(varId, trxId) and not lockManager.canWrite(varId, trxId)):
                 break
             for op in self.waitingOperations:
-                if op.varID == varId and op.action == Action.WRITE:
-                    if op.trxID not in self.waitsForGraph:
-                        self.waitsForGraph[op.trxID] = set()
-                    self.waitsForGraph[op.trxID].add(trxId)
-                    print('[ON_HOLD_WAIT]', f'T{trxId} waits because it cannot skip T{op.trxID}')
+                if op.var_id == varId and op.action == Action.WRITE:
+                    if op.txn_id not in self.waitsForGraph:
+                        self.waitsForGraph[op.txn_id] = set()
+                    self.waitsForGraph[op.txn_id].add(trxId)
+                    print('[ON_HOLD_WAIT]', f'T{trxId} waits because it cannot skip T{op.txn_id}')
                     shouldWait = True
                     break
         # (4) operation is on hold because of lock conflict
@@ -240,8 +240,8 @@ class TransactionManager:
 
     def getLockHolders(self, operation: Operation):
         lockHolders = set()
-        varId = operation.varID
-        txn_id = operation.trxID
+        varId = operation.var_id
+        txn_id = operation.txn_id
         sites = self.getAvailSitesHoldingVarId(varId)
         for site in sites:
             lockManager = site.lockManager
@@ -288,8 +288,8 @@ class TransactionManager:
         self.abort(youngestTrxId)
 
     def end(self, operation: Operation):
-        trxId = operation.trxID
-        currTime = operation.timeStamp
+        trxId = operation.txn_id
+        currTime = operation.timestamp
         trx = self.idToTransactions.get(trxId)
         if trx.status == TransactionStatus.ABORTED:
             return
@@ -318,7 +318,7 @@ class TransactionManager:
         self.removeFromWaitsForGraph(trxId)
         temp = []
         for op in self.waitingOperations:
-            if op.trxID == trxId:
+            if op.txn_id == trxId:
                 temp.append(op)
         
         # (2) Remove transaction in waiting operation
@@ -343,7 +343,7 @@ class TransactionManager:
         opsToWakeUp = deque()
         for lockedVarId in lockedVarIds:
             for op in self.waitingOperations:
-                if op.varID == lockedVarId and op not in opsToWakeUp:
+                if op.var_id == lockedVarId and op not in opsToWakeUp:
                     opsToWakeUp.append(op)
         if not opsToWakeUp:
             return
@@ -384,8 +384,8 @@ class TransactionManager:
             site.revertValue(trxId)
 
     def fail(self, operation: Operation):
-        siteId = operation.siteID
-        currTime = operation.timeStamp
+        siteId = operation.site_id
+        currTime = operation.timestamp
 
         site = self.idToSites.get(siteId)
         site.fail(currTime)
@@ -403,8 +403,8 @@ class TransactionManager:
             print('[AFFECTED_TXNS]', f'T{affected_txns} should abort')
 
     def recover(self, operation):
-        siteId = operation.siteID
-        currTime = operation.timeStamp
+        siteId = operation.site_id
+        currTime = operation.timestamp
         site = self.idToSites.get(siteId)
         site.recover(currTime)
         print('[INFO]', f'Site {siteId} recovers')

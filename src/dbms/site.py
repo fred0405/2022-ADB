@@ -58,18 +58,18 @@ class Site:
                 self.lockManager.varsWaitingForCommittedWrites.remove(varId)
         self.writtenVarIds.clear()
 
-    def fail(self, timeStamp: int):
+    def fail(self, timestamp: int):
         self.isDown = True
         self.revertAllValues() # waiting to implement
         self.lockManager.clear()
         if len(self.terminatedIntervals) == 0 or self.terminatedIntervals[-1].isClosed:
-            self.terminatedIntervals.append(Interval(timeStamp))
+            self.terminatedIntervals.append(Interval(timestamp))
 
-    def recover(self, timeStamp: int):
+    def recover(self, timestamp: int):
         self.isDown = False
         self.lockManager.varsWaitingForCommittedWrites.update(self.replicatedVarIds)
         if len(self.terminatedIntervals) != 0 and self.terminatedIntervals[-1].isClosed:
-            self.terminatedIntervals[-1].endTime = timeStamp - 1
+            self.terminatedIntervals[-1].endTime = timestamp - 1
 
     def isSiteFailInPeriod(self, startTime: int, endTime: int):
         for i in range(len(self.terminatedIntervals)):
