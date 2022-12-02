@@ -44,10 +44,10 @@ class Parser:
         op.timestamp = self.current_time
         if action == 'begin':
             op.action = Action.BEGIN
-            op.txn_id = self.read_num(tokens[1])
+            op.txn_id = self._read_num(tokens[1])
         elif action == "beginRO":
             op.action = Action.BEGIN_RO
-            op.txn_id = self.read_num(tokens[1])
+            op.txn_id = self._read_num(tokens[1])
         elif action == "end":
             op.action = Action.END
             op.txn_id = self._read_num(tokens[1])

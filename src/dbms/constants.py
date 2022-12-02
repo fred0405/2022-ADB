@@ -19,4 +19,4 @@ class TransactionStatus(Enum):
     WAITING = 2
     COMMITTED = 3
     ABORTED = 4
-    SHOULD_ABORTED = 5
+    ABORTING = 5

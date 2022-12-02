@@ -78,7 +78,7 @@ class TransactionManager:
  
     def readOrWrite(self, operation: Operation):
         trx = self.idToTransactions.get(operation.txn_id)
-        if trx.status == TransactionStatus.ABORTED or trx.status == TransactionStatus.SHOULD_ABORTED:
+        if trx.status == TransactionStatus.ABORTED or trx.status == TransactionStatus.ABORTING:
             print('[RW_FAIL]', f'T{trx.id} can\'t be executed because it is aborted or will be aborted')
             return
         if operation.action == Action.READ:
@@ -293,7 +293,7 @@ class TransactionManager:
         trx = self.idToTransactions.get(trxId)
         if trx.status == TransactionStatus.ABORTED:
             return
-        if trx.status == TransactionStatus.SHOULD_ABORTED:
+        if trx.status == TransactionStatus.ABORTING:
             self.abort(trxId)
             return
         self.commit(trxId, currTime)
@@ -396,7 +396,7 @@ class TransactionManager:
                     # txn already aborted
                     site.visitedTrxIds.remove(trx.id)
                 else:
-                    trx.status = TransactionStatus.SHOULD_ABORTED
+                    trx.status = TransactionStatus.ABORTING
                     affected_txns.append(trx.id)
         print('[INFO]', f'Site {siteId} is down')
         if affected_txns:
