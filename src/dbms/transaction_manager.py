@@ -7,8 +7,8 @@ class Transaction:
     def __init__(self, start_time: int, id: int) -> None:
         self.id = id
         self.start_time = start_time
-        self.status = TransactionStatus.ACTIVE
         self.is_read_only = False
+        self.status = TransactionStatus.ACTIVE
         self.data = dict()
 
 
@@ -85,7 +85,7 @@ class TransactionManager:
             self.read(operation)
         elif operation.action == Action.WRITE:
             self.write(operation)
-        self.detectDeadLock()
+        self.detect_and_resolve_deadlock()
 
     def read(self, operation: Operation):
         trxId = operation.txn_id
@@ -96,7 +96,7 @@ class TransactionManager:
         varId = operation.var_id
         if self.canRead(varId, trxId):
             self.readValue(operation)
-            self.addReadLock(varId, trxId)
+            self._addReadLock(varId, trxId)
         else:
             self.putOperationOnHold(operation)
 
@@ -139,7 +139,7 @@ class TransactionManager:
                 canRead = True
         return canRead
 
-    def addReadLock(self, varId, trxId):
+    def _addReadLock(self, varId, trxId):
         for site in self.getAvailSitesHoldingVarId(varId):
             site.lock_manager.addReadLock(varId, trxId)
 
@@ -149,18 +149,18 @@ class TransactionManager:
         writeToVal = operation.var_val
         if self.canWrite(varId, trxId):
             # print("[OK_TO_WRITE]", operation)
-            self.addWriteLock(varId, trxId)
-            self.writeValue(varId, writeToVal, trxId)
-            self.printSitesAffectedByTheWrite(operation)
+            self._addWriteLock(varId, trxId)
+            self._writeValue(varId, writeToVal, trxId)
+            self._print_write_intent(operation)
         else:
             print("[WRITE_ON_HOLD]", operation)
             self.putOperationOnHold(operation)
 
-    def writeValue(self, varId, writeToVal, trxId):
+    def _writeValue(self, varId, writeToVal, trxId):
         for site in self.getAvailSitesHoldingVarId(varId):
             site.writeValue(varId, writeToVal, trxId)
 
-    def printSitesAffectedByTheWrite(self, operation: Operation):
+    def _print_write_intent(self, operation: Operation):
         trxId = operation.txn_id
         varId = operation.var_id
         writeToVal = operation.var_val
@@ -181,7 +181,7 @@ class TransactionManager:
                     return False
         return True
 
-    def addWriteLock(self, varId, trxId):
+    def _addWriteLock(self, varId, trxId):
         for site in self.getAvailSitesHoldingVarId(varId):
             site.lock_manager.addWriteLock(varId, trxId)
 
@@ -196,7 +196,7 @@ class TransactionManager:
             print('[NO_AVAIL_SITE]', f'T{trxId} waits because all sites holding the variable are down')
             return
 
-        # (2) operation in recovered site which waiting for committed write
+        # (2) operation in the recovered site which waiting for committed write
         if operation.action == Action.READ:
             for site in availSites:
                 if varId in site.lock_manager.varsWaitingForCommittedWrites:
@@ -220,7 +220,7 @@ class TransactionManager:
         # (4) operation is on hold because of lock conflict
         self.waitingOperations.append(operation)
         locked = False
-        lockHolders = self.getLockHolders(operation)
+        lockHolders = self._getLockHolders(operation)
         if lockHolders:
             for lockedId in lockHolders:
                 if lockedId not in self.waitsForGraph:
@@ -229,7 +229,7 @@ class TransactionManager:
                 locked = True
         if locked:
             print('[LOCK_CONFLICT]', f'T{trxId} waits for T{lockHolders}')
-        # self.printWaitsForGraph()
+        # self.print_wait_graph()
 
     def getAvailSitesHoldingVarId(self, varId):
         ret = set()
@@ -238,7 +238,7 @@ class TransactionManager:
                 ret.add(site)
         return list(ret)
 
-    def getLockHolders(self, operation: Operation):
+    def _getLockHolders(self, operation: Operation):
         lockHolders = set()
         varId = operation.var_id
         txn_id = operation.txn_id
@@ -257,26 +257,26 @@ class TransactionManager:
             lockHolders.remove(txn_id)
         return lockHolders
 
-    def detectDeadLock(self):
+    def detect_and_resolve_deadlock(self):
         for trxId in self.idToTransactions.keys():
             visited = set()
-            if self.hasCycle(trxId, visited):
-                self.abortYoungestTrx(visited)
+            if self._has_cycle(trxId, visited):
+                self._abort_youngest_txn(visited)
                 return
                 
-    def hasCycle(self, currTrxId, visited):
+    def _has_cycle(self, currTrxId, visited):
         if currTrxId in visited:
             return True
         if currTrxId not in self.waitsForGraph:
             return False
         visited.add(currTrxId)
         for waitingTrxId in self.waitsForGraph[currTrxId]:
-            if self.hasCycle(waitingTrxId, visited):
+            if self._has_cycle(waitingTrxId, visited):
                 return True
         visited.remove(currTrxId)
         return False
 
-    def abortYoungestTrx(self, visited):
+    def _abort_youngest_txn(self, visited):
         youngestTrxId = -1
         largestTime = -1
         for trxId in visited:
@@ -301,21 +301,21 @@ class TransactionManager:
     def commit(self, trxId, currTime):
         trx = self.idToTransactions.get(trxId)
         trx.status = TransactionStatus.COMMITTED
-        self.commitOrAbort(trxId, True, currTime)
+        self.commit_or_abort(trxId, True, currTime)
         print('[INFO]', f'T{trxId} commits')
 
     def abort(self, trxId):
         trx = self.idToTransactions.get(trxId)
         trx.status = TransactionStatus.ABORTED
-        self.commitOrAbort(trxId, False, None)
+        self.commit_or_abort(trxId, False, None)
         print('[INFO]', f'T{trxId} aborts')
     
-    def commitOrAbort(self, trxId, shouldCommit, currTime):
+    def commit_or_abort(self, trxId, shouldCommit, currTime):
         if shouldCommit and currTime == None:
             return
         
         # (1) Remove transaction in waitsForGraph
-        self.removeFromWaitsForGraph(trxId)
+        self._remove_from_wait_graph(trxId)
         temp = []
         for op in self.waitingOperations:
             if op.txn_id == trxId:
@@ -328,18 +328,18 @@ class TransactionManager:
 
         committedWrittenVarIds = set()
         if shouldCommit:
-            self.commitValue(trxId, currTime, committedWrittenVarIds)
+            self._commit_value(trxId, currTime, committedWrittenVarIds)
         else:
-            self.revertValue(trxId)
+            self._revert_value(trxId)
         
-        lockedVarIds = self.getLockVariables(trxId)
+        lockedVarIds = self._get_locked_vars(trxId)
         lockedVarIds.update(committedWrittenVarIds)
         # (3) release transaction's locks
-        self.releaseAllLocks(trxId)
+        self._release_all_locks(trxId)
         # (4) wake up waiting operations
-        self.wakeUpWaitingOperations(lockedVarIds)
+        self._wake_up_waiting_ops(lockedVarIds)
 
-    def wakeUpWaitingOperations(self, lockedVarIds):
+    def _wake_up_waiting_ops(self, lockedVarIds):
         opsToWakeUp = deque()
         for lockedVarId in lockedVarIds:
             for op in self.waitingOperations:
@@ -352,7 +352,7 @@ class TransactionManager:
             self.waitingOperations.remove(op)
             self.pending_operations.append(op)
         
-    def removeFromWaitsForGraph(self, trxId):
+    def _remove_from_wait_graph(self, trxId):
         emptyTrx = list()
         for key, value in self.waitsForGraph.items():
             if trxId in value:
@@ -364,22 +364,22 @@ class TransactionManager:
         self.waitsForGraph.pop(trxId, None)
         # self.printWaitsForGraph()
 
-    def getLockVariables(self, trxId):
+    def _get_locked_vars(self, trxId):
         lockVariable = set()
         for site in self.idToSites.values():
             lockVariable.update(site.lock_manager.getLockedVariables(trxId))
         return lockVariable
 
-    def releaseAllLocks(self, trxId):
+    def _release_all_locks(self, trxId):
         for site in self.idToSites.values():
             site.lock_manager.releaseAllLocks(trxId)
 
-    def commitValue(self, txn_id, currTime, committedWrittenVarIds):
+    def _commit_value(self, txn_id, currTime, committedWrittenVarIds):
         for site in self.idToSites.values():
             committedWrittenVarIds.update(site.writtenVarIds)
             site.commitValue(txn_id, currTime)
 
-    def revertValue(self, trxId):
+    def _revert_value(self, trxId):
         for site in self.idToSites.values():
             site.revertValue(trxId)
 
@@ -404,9 +404,8 @@ class TransactionManager:
 
     def recover(self, operation):
         siteId = operation.site_id
-        currTime = operation.timestamp
         site = self.idToSites.get(siteId)
-        site.recover(currTime)
+        site.recover(operation.timestamp)
         print('[INFO]', f'Site {siteId} recovers')
 
     def dump(self, operation):
@@ -421,20 +420,3 @@ class TransactionManager:
                 delim = ', '
             print(f'site {site.id} - {sb}')
     
-    # def printWaitsForGraph(self):
-    #     sb = ''
-    #     sb += 'Size of waitsForGraph: ' + str(len(self.waitsForGraph)) + '\n'
-    #     sb += '-----------------------------------------\n'
-    #     for trxId in self.waitsForGraph.keys():
-    #         sb += str(trxId) + ': '
-    #         for waitingTrx in self.waitsForGraph.get(trxId):
-    #             sb += str(waitingTrx) + ' '
-    #         sb += '\n'
-    #     sb += '-----------------------------------------\n'
-
-
-    
-    
-    
-    
-            
