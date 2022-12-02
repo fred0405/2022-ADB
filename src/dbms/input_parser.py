@@ -50,28 +50,28 @@ class Parser:
             op.txn_id = self.read_num(tokens[1])
         elif action == "end":
             op.action = Action.END
-            op.txn_id = self.read_num(tokens[1])
+            op.txn_id = self._read_num(tokens[1])
         elif action == "W":
             op.action = Action.WRITE
-            op.txn_id = self.read_num(tokens[1])
-            op.var_id = self.read_num(tokens[2])
-            op.var_val = self.read_num(tokens[3])
+            op.txn_id = self._read_num(tokens[1])
+            op.var_id = self._read_num(tokens[2])
+            op.var_val = self._read_num(tokens[3])
         elif action == "R":
             op.action = Action.READ
-            op.txn_id = self.read_num(tokens[1])
-            op.var_id = self.read_num(tokens[2])
+            op.txn_id = self._read_num(tokens[1])
+            op.var_id = self._read_num(tokens[2])
         elif action == "fail":
             op.action = Action.FAIL
-            op.site_id = self.read_num(tokens[1])
+            op.site_id = self._read_num(tokens[1])
         elif action == "recover":
             op.action = Action.RECOVER
-            op.site_id = self.read_num(tokens[1])
+            op.site_id = self._read_num(tokens[1])
         elif action == "dump":
             op.action = Action.DUMP
         self.current_time += 1
         return op
 
-    def read_num(self, s):
+    def _read_num(self, s):
         for i in range(len(s)):
             if not s[i].isdigit():
                 continue
