@@ -63,7 +63,7 @@ class TransactionManager:
         
         data = dict()
         for site in self.idToSites.values():
-            if site.isDown:
+            if site.is_down:
                 continue
             for varId in site.nonReplicatedVarIds:
                 data[varId] = site.varToCommittedVal.get(varId)
@@ -129,19 +129,19 @@ class TransactionManager:
             return False
         canRead = False
         for site in sites:
-            lockManager = site.lockManager
+            lockManager = site.lock_manager
             if not lockManager.canRead(varId, trxId):
                 return False
             for op in self.waitingOperations:
                 if op.var_id == varId and op.action == Action.WRITE:
                     return False
-            if varId in site.nonReplicatedVarIds or (varId in site.replicatedVarIds and varId not in site.lockManager.varsWaitingForCommittedWrites):
+            if varId in site.nonReplicatedVarIds or (varId in site.replicatedVarIds and varId not in site.lock_manager.varsWaitingForCommittedWrites):
                 canRead = True
         return canRead
 
     def addReadLock(self, varId, trxId):
         for site in self.getAvailSitesHoldingVarId(varId):
-            site.lockManager.addReadLock(varId, trxId)
+            site.lock_manager.addReadLock(varId, trxId)
 
     def write(self, operation: Operation):
         trxId = operation.txn_id
@@ -174,7 +174,7 @@ class TransactionManager:
         if not sites:
             return False
         for site in sites:
-            if not site.lockManager.canWrite(varId, trxId):
+            if not site.lock_manager.canWrite(varId, trxId):
                 return False
             for op in self.waitingOperations:
                 if op.var_id == varId and op.action == Action.WRITE:
@@ -183,7 +183,7 @@ class TransactionManager:
 
     def addWriteLock(self, varId, trxId):
         for site in self.getAvailSitesHoldingVarId(varId):
-            site.lockManager.addWriteLock(varId, trxId)
+            site.lock_manager.addWriteLock(varId, trxId)
 
     def putOperationOnHold(self, operation: Operation):
         trxId = operation.txn_id
@@ -199,14 +199,14 @@ class TransactionManager:
         # (2) operation in recovered site which waiting for committed write
         if operation.action == Action.READ:
             for site in availSites:
-                if varId in site.lockManager.varsWaitingForCommittedWrites:
+                if varId in site.lock_manager.varsWaitingForCommittedWrites:
                     print('[WAIT_FOR_COMMIT]', f'T{trxId} waits because x{varId} is waiting for committed write at site {site.id}')
                     break
         
         # (3) operation should execute after some of waiting operations
         shouldWait = False
         for site in availSites:
-            lockManager = site.lockManager
+            lockManager = site.lock_manager
             if shouldWait or (not lockManager.canRead(varId, trxId) and not lockManager.canWrite(varId, trxId)):
                 break
             for op in self.waitingOperations:
@@ -234,7 +234,7 @@ class TransactionManager:
     def getAvailSitesHoldingVarId(self, varId):
         ret = set()
         for site in self.idToSites.values():
-            if not site.isDown and (varId in site.replicatedVarIds or varId in site.nonReplicatedVarIds):
+            if not site.is_down and (varId in site.replicatedVarIds or varId in site.nonReplicatedVarIds):
                 ret.add(site)
         return list(ret)
 
@@ -244,7 +244,7 @@ class TransactionManager:
         txn_id = operation.txn_id
         sites = self.getAvailSitesHoldingVarId(varId)
         for site in sites:
-            lockManager = site.lockManager
+            lockManager = site.lock_manager
             readLocks = lockManager.readLocks
             writeLocks = lockManager.writeLocks
 
@@ -367,12 +367,12 @@ class TransactionManager:
     def getLockVariables(self, trxId):
         lockVariable = set()
         for site in self.idToSites.values():
-            lockVariable.update(site.lockManager.getLockedVariables(trxId))
+            lockVariable.update(site.lock_manager.getLockedVariables(trxId))
         return lockVariable
 
     def releaseAllLocks(self, trxId):
         for site in self.idToSites.values():
-            site.lockManager.releaseAllLocks(trxId)
+            site.lock_manager.releaseAllLocks(trxId)
 
     def commitValue(self, txn_id, currTime, committedWrittenVarIds):
         for site in self.idToSites.values():

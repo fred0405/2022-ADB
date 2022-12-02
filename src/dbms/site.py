@@ -4,9 +4,9 @@ from .utils import Interval
 
 class Site:
     def __init__(self, id: int) -> None:
-        self.lockManager = LockManager()
+        self.lock_manager = LockManager()
         self.id = id
-        self.isDown = False
+        self.is_down = False
 
         self.replicatedVarIds = list()
         self.nonReplicatedVarIds = list()
@@ -32,15 +32,14 @@ class Site:
         return self.varToCurrVal.get(varId)
 
     def writeValue(self, varId: int, writeToVal: int, trxId: int):
-        #print("///write site", self.id, varId, writeToVal, trxId)
         self.varToCurrVal[varId] = writeToVal
         self.visitedTrxIds.add(trxId)
         self.writtenVarIds.add(varId)
 
     def commitValue(self, txn_id: int, currTime: int):
-        if self.isDown:
+        if self.is_down:
             return 
-        lockVariables = self.lockManager.getLockedVariables(txn_id)
+        lockVariables = self.lock_manager.getLockedVariables(txn_id)
         for varId in lockVariables:
             self.varToCommittedVal[varId] = self.varToCurrVal.get(varId)
             self.varToCommittedTime[varId] = currTime
@@ -54,20 +53,21 @@ class Site:
         # varsWaitingForCommittedWrites and clear writtenVarIds. (Used for recovery
         # site release read locks)
         for varId in self.writtenVarIds:
-            if varId in self.lockManager.varsWaitingForCommittedWrites:
-                self.lockManager.varsWaitingForCommittedWrites.remove(varId)
+            if varId in self.lock_manager.varsWaitingForCommittedWrites:
+                self.lock_manager.varsWaitingForCommittedWrites.remove(varId)
         self.writtenVarIds.clear()
 
     def fail(self, timestamp: int):
-        self.isDown = True
-        self.revertAllValues() # waiting to implement
-        self.lockManager.clear()
+        self.is_down = True
+        # TODO
+        self._revertAllValues()
+        self.lock_manager.clear()
         if len(self.terminatedIntervals) == 0 or self.terminatedIntervals[-1].isClosed:
             self.terminatedIntervals.append(Interval(timestamp))
 
     def recover(self, timestamp: int):
-        self.isDown = False
-        self.lockManager.varsWaitingForCommittedWrites.update(self.replicatedVarIds)
+        self.is_down = False
+        self.lock_manager.varsWaitingForCommittedWrites.update(self.replicatedVarIds)
         if len(self.terminatedIntervals) != 0 and self.terminatedIntervals[-1].isClosed:
             self.terminatedIntervals[-1].endTime = timestamp - 1
 
@@ -80,9 +80,9 @@ class Site:
         return False
 
     def revertValue(self, trxId: int):
-        lockVariables = self.lockManager.getLockedVariables(trxId)
+        lockVariables = self.lock_manager.getLockedVariables(trxId)
         for varId in lockVariables:
             self.varToCurrVal[varId] = self.varToCommittedVal.get(varId)
 
-    def revertAllValues(self):
+    def _revertAllValues(self):
         self.varToCurrVal = self.varToCommittedVal

@@ -53,28 +53,10 @@ class LockManager:
 
         return lockVars
     
-    def eraseAllTables(self):
+    def _eraseAllTables(self):
         self.readLocks.clear()
         self.writeLocks.clear()
 
     def clear(self):
-        self.eraseAllTables()
+        self._eraseAllTables()
         self.varsWaitingForCommittedWrites.clear()
-
-    def getAllReadLockTrxs(self):
-        readLockTrxs = set()
-        for trxs in self.readLocks.values():
-            readLockTrxs.update(trxs)
-        return readLockTrxs
-
-    def getAllWriteLockTrxs(self):
-        writeLockTrxs = set()
-        for trx in self.writeLocks.values():
-            writeLockTrxs.add(trx)
-        return writeLockTrxs
-
-    def getAllTrxHoldingLocks(self):
-        trxs = set()
-        trxs.update(self.getAllReadLockTrxs())
-        trxs.update(self.getAllWriteLockTrxs())
-        return trxs
