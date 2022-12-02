@@ -1,8 +1,16 @@
 from collections import deque
 
 from .constants import Action, TransactionStatus
-from .IO import Operation, IO
-from .Transaction import Transaction
+from .input_parser import Operation, Parser
+
+class Transaction:
+    def __init__(self, beginTime: int, id: int) -> None:
+        self.beginTime = beginTime
+        self.id = id
+        self.status = TransactionStatus.ACTIVE
+        self.isReadyOnly = False
+        self.data = dict()
+
 
 class TransactionManager:
     def __init__(self, idToSites: dict) -> None:
@@ -24,7 +32,7 @@ class TransactionManager:
         }
 
     def start(self) -> None:
-        parser = IO()
+        parser = Parser()
         while True:
             if self.pending_operations:
                 ops_todo = self.pending_operations

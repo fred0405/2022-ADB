@@ -25,7 +25,7 @@ class Operation:
             ret += f' Write_val:{self.writesToVal}'
         return ret + ')'
 
-class IO:
+class Parser:
     def __init__(self) -> None:
         self.inputFile = ''
         self.currentTime = 0

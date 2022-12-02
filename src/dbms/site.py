@@ -1,6 +1,6 @@
-from .LockManager import LockManager
+from .lock_manager import LockManager
 from .constants import DataType
-from .Interval import Interval
+from .utils import Interval
 
 class Site:
     def __init__(self, id: int) -> None:

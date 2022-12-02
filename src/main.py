@@ -1,6 +1,5 @@
-from dbms.IO import IO
 from dbms.site import Site
-from dbms.TransactionManager import TransactionManager
+from dbms.transaction_manager import TransactionManager
 from dbms.constants import DataType
 
 class DB():
