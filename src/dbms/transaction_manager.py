@@ -4,11 +4,11 @@ from .constants import Action, TransactionStatus
 from .input_parser import Operation, Parser
 
 class Transaction:
-    def __init__(self, beginTime: int, id: int) -> None:
-        self.beginTime = beginTime
+    def __init__(self, start_time: int, id: int) -> None:
         self.id = id
+        self.start_time = start_time
         self.status = TransactionStatus.ACTIVE
-        self.isReadyOnly = False
+        self.is_read_only = False
         self.data = dict()
 
 
@@ -59,7 +59,7 @@ class TransactionManager:
     def initROTransaction(self, operation: Operation):
         currTime = operation.timestamp
         trx = Transaction(currTime, operation.txn_id)
-        trx.isReadyOnly = True
+        trx.is_read_only = True
         
         data = dict()
         for site in self.idToSites.values():
@@ -90,7 +90,7 @@ class TransactionManager:
     def read(self, operation: Operation):
         trxId = operation.txn_id
         trx = self.idToTransactions.get(trxId)
-        if trx.isReadyOnly:
+        if trx.is_read_only:
             self.readROValue(operation)
             return
         varId = operation.var_id
@@ -281,8 +281,8 @@ class TransactionManager:
         largestTime = -1
         for trxId in visited:
             trx = self.idToTransactions.get(trxId)
-            if trx.beginTime > largestTime:
-                largestTime = trx.beginTime
+            if trx.start_time > largestTime:
+                largestTime = trx.start_time
                 youngestTrxId = trxId
         print('[DEADLOCK_DETECTED]', f'kill youngest transaction T{youngestTrxId}')
         self.abort(youngestTrxId)
