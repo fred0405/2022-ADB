@@ -1,0 +1,26 @@
+[INFO] T1 begins
+[INFO] T2 begins
+[INFO] T3 begins
+[INFO] T4 begins
+[INFO] T5 begins
+[INFO] T3 reads x3: 30
+[INFO] Site 4 is down
+[AFFECTED_TXNS] T[3] should abort
+[INFO] Site 4 recovers
+[INFO] T4 reads x4: 40
+[INFO] T5 reads x5: 50
+[INFO] T1 reads x6: 60
+[INFO] T2 reads x2: 20
+[WRITE_ON_HOLD] (Time:12 Action.WRITE Txn:1 Var:2 Write_var_val:10)
+[LOCK_CONFLICT] T1 waits for T{2}
+[INFO] T2 writes x3: 20 to site(s): 4
+[RW_FAIL] T3 can't be executed because it is aborted or will be aborted
+[INFO] T5 writes x1: 50 to site(s): 2
+[INFO] T5 commits
+[INFO] T4 writes x5: 40 to site(s): 6
+[INFO] T4 commits
+[INFO] T3 aborts
+[WAKE_UP_OP] (Time:12 Action.WRITE Txn:1 Var:2 Write_var_val:10)
+[INFO] T2 commits
+[INFO] T1 writes x2: 10 to site(s): 1 2 3 4 5 6 7 8 9 10
+[INFO] T1 commits

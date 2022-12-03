@@ -12,7 +12,7 @@ We implement a tiny distributed database and complete multi-version concurrency 
 
 ## Programming Language
 
-Python
+Python 3.10.6
 
 ## Design Graph
 
@@ -49,12 +49,12 @@ Python
 
 ## How To Run
 
-* run test1 ~ test24 in the `inputs` directory
+* run test1 ~ test21 in the `inputs` directory
     * use this command: `./runit.sh`
     * output files will be generated in the `outputs` directory
 
 * run certain test
-    * use this command: `java -jar RepCRec.jar ./inputs/test1.txt`
+    * use this command: `python main.py < ./inputs/test1 > ./outputs/test1.txt_out`
     * output file `test1.txt_out` will be generated in the `outputs` directory
 
 * unzip and run reprounzip file

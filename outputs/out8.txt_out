@@ -1,0 +1,11 @@
+[INFO] T1 begins
+[INFO] T2 begins as a read-only transaction
+[INFO] T2 reads x1: 10
+[INFO] T2 reads x2: 20
+[INFO] T1 writes x3: 33 to site(s): 4
+[INFO] T1 commits
+[INFO] T3 begins as a read-only transaction
+[INFO] T3 reads x3: 33
+[INFO] T2 reads x3: 30
+[INFO] T2 commits
+[INFO] T3 commits

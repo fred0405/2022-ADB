@@ -1,0 +1,26 @@
+[INFO] T1 begins
+[INFO] T2 begins
+[INFO] T1 writes x2: 9 to site(s): 1 2 3 4 5 6 7 8 9 10
+[INFO] Site 1 is down
+[AFFECTED_TXNS] T[1] should abort
+[INFO] T1 aborts
+[INFO] T3 begins
+[INFO] T3 writes x2: 100 to site(s): 2 3 4 5 6 7 8 9 10
+[INFO] T3 commits
+[INFO] Site 1 recovers
+[INFO] Site 2 is down
+[INFO] Site 3 is down
+[INFO] Site 4 is down
+[INFO] Site 5 is down
+[INFO] Site 6 is down
+[INFO] Site 7 is down
+[INFO] Site 8 is down
+[INFO] Site 9 is down
+[INFO] Site 10 is down
+[WAIT_FOR_COMMIT] T2 waits because x2 is waiting for committed write at site 1
+[INFO] T5 begins
+[INFO] T5 writes x2: 90 to site(s): 1
+[WAKE_UP_OP] (Time:18 Action.READ Txn:2 Var:2)
+[INFO] T5 commits
+[INFO] T2 reads x2: 90
+[INFO] T2 commits

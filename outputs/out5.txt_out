@@ -1,0 +1,11 @@
+[INFO] T1 begins
+[INFO] T2 begins
+[INFO] T1 writes x6: 66 to site(s): 1 2 3 4 5 6 7 8 9 10
+[INFO] Site 2 is down
+[AFFECTED_TXNS] T[1] should abort
+[INFO] T2 writes x8: 88 to site(s): 1 3 4 5 6 7 8 9 10
+[INFO] T2 reads x3: 30
+[RW_FAIL] T1 can't be executed because it is aborted or will be aborted
+[INFO] T2 commits
+[INFO] Site 2 recovers
+[INFO] T1 aborts

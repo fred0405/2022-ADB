@@ -1,0 +1,18 @@
+[INFO] T1 begins
+[INFO] T2 begins
+[INFO] T3 begins
+[INFO] T3 writes x2: 10 to site(s): 1 2 3 4 5 6 7 8 9 10
+[WRITE_ON_HOLD] (Time:4 Action.WRITE Txn:1 Var:2 Write_var_val:10)
+[LOCK_CONFLICT] T1 waits for T{3}
+[WRITE_ON_HOLD] (Time:5 Action.WRITE Txn:2 Var:2 Write_var_val:10)
+[LOCK_CONFLICT] T2 waits for T{3}
+[WAKE_UP_OP] (Time:4 Action.WRITE Txn:1 Var:2 Write_var_val:10)
+[WAKE_UP_OP] (Time:5 Action.WRITE Txn:2 Var:2 Write_var_val:10)
+[INFO] T3 commits
+[INFO] T1 writes x2: 10 to site(s): 1 2 3 4 5 6 7 8 9 10
+[WRITE_ON_HOLD] (Time:5 Action.WRITE Txn:2 Var:2 Write_var_val:10)
+[LOCK_CONFLICT] T2 waits for T{1}
+[WAKE_UP_OP] (Time:5 Action.WRITE Txn:2 Var:2 Write_var_val:10)
+[INFO] T1 commits
+[INFO] T2 writes x2: 10 to site(s): 1 2 3 4 5 6 7 8 9 10
+[INFO] T2 commits

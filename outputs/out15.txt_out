@@ -1,0 +1,51 @@
+[INFO] T5 begins
+[INFO] T4 begins
+[INFO] T3 begins
+[INFO] T2 begins
+[INFO] T1 begins
+[INFO] T1 writes x4: 5 to site(s): 1 2 3 4 5 6 7 8 9 10
+[INFO] Site 2 is down
+[AFFECTED_TXNS] T[1] should abort
+[WRITE_ON_HOLD] (Time:7 Action.WRITE Txn:2 Var:4 Write_var_val:44)
+[LOCK_CONFLICT] T2 waits for T{1}
+[INFO] Site 2 recovers
+[WRITE_ON_HOLD] (Time:9 Action.WRITE Txn:3 Var:4 Write_var_val:55)
+[ON_HOLD_WAIT] T3 waits because it cannot skip T2
+[LOCK_CONFLICT] T3 waits for T{1}
+[WRITE_ON_HOLD] (Time:10 Action.WRITE Txn:4 Var:4 Write_var_val:66)
+[ON_HOLD_WAIT] T4 waits because it cannot skip T2
+[LOCK_CONFLICT] T4 waits for T{1}
+[WRITE_ON_HOLD] (Time:11 Action.WRITE Txn:5 Var:4 Write_var_val:77)
+[ON_HOLD_WAIT] T5 waits because it cannot skip T2
+[LOCK_CONFLICT] T5 waits for T{1}
+[WAKE_UP_OP] (Time:7 Action.WRITE Txn:2 Var:4 Write_var_val:44)
+[WAKE_UP_OP] (Time:9 Action.WRITE Txn:3 Var:4 Write_var_val:55)
+[WAKE_UP_OP] (Time:10 Action.WRITE Txn:4 Var:4 Write_var_val:66)
+[WAKE_UP_OP] (Time:11 Action.WRITE Txn:5 Var:4 Write_var_val:77)
+[INFO] T1 aborts
+[INFO] T2 writes x4: 44 to site(s): 1 2 3 4 5 6 7 8 9 10
+[WRITE_ON_HOLD] (Time:9 Action.WRITE Txn:3 Var:4 Write_var_val:55)
+[LOCK_CONFLICT] T3 waits for T{2}
+[WRITE_ON_HOLD] (Time:10 Action.WRITE Txn:4 Var:4 Write_var_val:66)
+[LOCK_CONFLICT] T4 waits for T{2}
+[WRITE_ON_HOLD] (Time:11 Action.WRITE Txn:5 Var:4 Write_var_val:77)
+[LOCK_CONFLICT] T5 waits for T{2}
+[WAKE_UP_OP] (Time:9 Action.WRITE Txn:3 Var:4 Write_var_val:55)
+[WAKE_UP_OP] (Time:10 Action.WRITE Txn:4 Var:4 Write_var_val:66)
+[WAKE_UP_OP] (Time:11 Action.WRITE Txn:5 Var:4 Write_var_val:77)
+[INFO] T2 commits
+[INFO] T3 writes x4: 55 to site(s): 1 2 3 4 5 6 7 8 9 10
+[WRITE_ON_HOLD] (Time:10 Action.WRITE Txn:4 Var:4 Write_var_val:66)
+[LOCK_CONFLICT] T4 waits for T{3}
+[WRITE_ON_HOLD] (Time:11 Action.WRITE Txn:5 Var:4 Write_var_val:77)
+[LOCK_CONFLICT] T5 waits for T{3}
+[WAKE_UP_OP] (Time:10 Action.WRITE Txn:4 Var:4 Write_var_val:66)
+[WAKE_UP_OP] (Time:11 Action.WRITE Txn:5 Var:4 Write_var_val:77)
+[INFO] T3 commits
+[INFO] T4 writes x4: 66 to site(s): 1 2 3 4 5 6 7 8 9 10
+[WRITE_ON_HOLD] (Time:11 Action.WRITE Txn:5 Var:4 Write_var_val:77)
+[LOCK_CONFLICT] T5 waits for T{4}
+[WAKE_UP_OP] (Time:11 Action.WRITE Txn:5 Var:4 Write_var_val:77)
+[INFO] T4 commits
+[INFO] T5 writes x4: 77 to site(s): 1 2 3 4 5 6 7 8 9 10
+[INFO] T5 commits
