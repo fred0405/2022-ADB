@@ -28,7 +28,7 @@ Make sure the `python` command refers to Python version 3.
     * `python src/main.py < ./inputs/test1.txt > ./outputs/test1.txt_out`
 
 * run a batch of input files
-    * run the batch script `./runit.sh`
+    * run the batch script `./runit.sh ./inputs ./outputs`
     * it will run the test files `test1 ~ test21` in the `inputs` directory
     * output files will be generated in the `outputs` directory
 
