@@ -1,8 +1,6 @@
-PROGRAM=${1:-python3 src/main.py}
-shift
-INDIR=${1:-./inputs}
-shift
-OUTDIR=${1:-./outputs}
+PROGRAM="python3 src/main.py"
+INDIR="$1"
+OUTDIR="$2"
 echo "program=<$PROGRAM> indir=<$INDIR> outdir=<$OUTDIR>"
 
 INS="`seq 1 23`"
