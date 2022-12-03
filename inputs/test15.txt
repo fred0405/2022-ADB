@@ -1,4 +1,3 @@
-// Test 13
 // T1 and T2 wait but eventually commit
 begin(T1)
 begin(T2)
@@ -9,3 +8,4 @@ W(T1,x2,10)
 end(T3)
 end(T2)
 end(T1)
+dump()

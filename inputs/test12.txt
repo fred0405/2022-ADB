@@ -1,4 +1,3 @@
-// Test 10
 // T3 should wait and should not abort
 begin(T1)
 begin(T2)
@@ -10,3 +9,4 @@ end(T2)
 end(T3)
 R(T1,x2)
 end(T1)
+dump()

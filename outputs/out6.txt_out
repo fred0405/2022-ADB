@@ -1,18 +1,18 @@
 [INFO] T1 begins
 [INFO] T2 begins
-[INFO] Site 3 is down
-[INFO] Site 4 is down
 [INFO] T1 reads x1: 10
-[INFO] T2 writes x8: 88 to site(s): 1 2 5 6 7 8 9 10
-[INFO] T1 commits
-[INFO] Site 4 recovers
-[INFO] Site 3 recovers
+[INFO] Site 2 is down
+[AFFECTED_TXNS] T[1] should abort
+[INFO] T2 writes x8: 88 to site(s): 1 3 4 5 6 7 8 9 10
 [INFO] T2 reads x3: 30
+[RW_FAIL] T1 can't be executed because it is aborted or will be aborted
 [INFO] T2 commits
+[INFO] Site 2 recovers
+[INFO] T1 aborts
 site 1 - x2: 20, x4: 40, x6: 60, x8: 88, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
-site 2 - x1: 10, x2: 20, x4: 40, x6: 60, x8: 88, x10: 100, x11: 110, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
-site 3 - x2: 20, x4: 40, x6: 60, x8: 80, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
-site 4 - x2: 20, x3: 30, x4: 40, x6: 60, x8: 80, x10: 100, x12: 120, x13: 130, x14: 140, x16: 160, x18: 180, x20: 200
+site 2 - x1: 10, x2: 20, x4: 40, x6: 60, x8: 80, x10: 100, x11: 110, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
+site 3 - x2: 20, x4: 40, x6: 60, x8: 88, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
+site 4 - x2: 20, x3: 30, x4: 40, x6: 60, x8: 88, x10: 100, x12: 120, x13: 130, x14: 140, x16: 160, x18: 180, x20: 200
 site 5 - x2: 20, x4: 40, x6: 60, x8: 88, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
 site 6 - x2: 20, x4: 40, x5: 50, x6: 60, x8: 88, x10: 100, x12: 120, x14: 140, x15: 150, x16: 160, x18: 180, x20: 200
 site 7 - x2: 20, x4: 40, x6: 60, x8: 88, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200

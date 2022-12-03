@@ -54,7 +54,7 @@ Python 3.10.6
     * output files will be generated in the `outputs` directory
 
 * run certain test
-    * use this command: `python main.py < ./inputs/test1 > ./outputs/test1.txt_out`
+    * use this command: `python main.py < ./inputs/test1.txt > ./outputs/test1.txt_out`
     * output file `test1.txt_out` will be generated in the `outputs` directory
 
 * unzip and run reprounzip file
