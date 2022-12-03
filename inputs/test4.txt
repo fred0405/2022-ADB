@@ -1,4 +1,4 @@
-// Test 3.5
+// Test 4
 // T1 should not abort because site 4 did not fail.
 // However T1 will write to x4 on every site except site 2.
 // Site 2 should not be able to respond to read requests for any
@@ -15,7 +15,7 @@
 begin(T1)
 begin(T2)
 R(T1,x3)
-W(T2,x8,88) 
+W(T2,x8,88)
 fail(2)
 R(T2,x3)
 W(T1, x4,91)

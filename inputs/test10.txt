@@ -1,4 +1,3 @@
-// Test 8
 // T2 still reads the initial value of x3
 // T3 still reads the value of x3 written by T1
 begin(T1)
@@ -12,3 +11,4 @@ R(T3,x3)
 R(T2,x3)
 end(T2)
 end(T3)
+dump()

@@ -1,26 +1,44 @@
 [INFO] T1 begins
 [INFO] T2 begins
-[INFO] T1 writes x2: 9 to site(s): 1 2 3 4 5 6 7 8 9 10
-[INFO] Site 1 is down
-[AFFECTED_TXNS] T[1] should abort
-[INFO] T1 aborts
 [INFO] T3 begins
-[INFO] T3 writes x2: 100 to site(s): 2 3 4 5 6 7 8 9 10
-[INFO] T3 commits
-[INFO] Site 1 recovers
-[INFO] Site 2 is down
-[INFO] Site 3 is down
-[INFO] Site 4 is down
-[INFO] Site 5 is down
-[INFO] Site 6 is down
-[INFO] Site 7 is down
-[INFO] Site 8 is down
-[INFO] Site 9 is down
-[INFO] Site 10 is down
-[WAIT_FOR_COMMIT] T2 waits because x2 is waiting for committed write at site 1
+[INFO] T4 begins
 [INFO] T5 begins
-[INFO] T5 writes x2: 90 to site(s): 1
-[WAKE_UP_OP] (Time:18 Action.READ Txn:2 Var:2)
-[INFO] T5 commits
-[INFO] T2 reads x2: 90
+[INFO] T3 reads x3: 30
+[INFO] T4 reads x4: 40
+[INFO] T5 reads x5: 50
+[INFO] T1 reads x1: 10
+[INFO] T2 reads x2: 20
+[WRITE_ON_HOLD] (Time:10 Action.WRITE Txn:1 Var:2 Write_var_val:10)
+[LOCK_CONFLICT] T1 waits for T{2}
+[WRITE_ON_HOLD] (Time:11 Action.WRITE Txn:2 Var:3 Write_var_val:20)
+[LOCK_CONFLICT] T2 waits for T{3}
+[WRITE_ON_HOLD] (Time:12 Action.WRITE Txn:3 Var:4 Write_var_val:30)
+[LOCK_CONFLICT] T3 waits for T{4}
+[WRITE_ON_HOLD] (Time:13 Action.WRITE Txn:4 Var:5 Write_var_val:40)
+[LOCK_CONFLICT] T4 waits for T{5}
+[WRITE_ON_HOLD] (Time:14 Action.WRITE Txn:5 Var:1 Write_var_val:50)
+[LOCK_CONFLICT] T5 waits for T{1}
+[DEADLOCK_DETECTED] kill youngest transaction T5
+[WAKE_UP_OP] (Time:13 Action.WRITE Txn:4 Var:5 Write_var_val:40)
+[INFO] T5 aborts
+[INFO] T4 writes x5: 40 to site(s): 6
+[WAKE_UP_OP] (Time:12 Action.WRITE Txn:3 Var:4 Write_var_val:30)
+[INFO] T4 commits
+[INFO] T3 writes x4: 30 to site(s): 1 2 3 4 5 6 7 8 9 10
+[WAKE_UP_OP] (Time:11 Action.WRITE Txn:2 Var:3 Write_var_val:20)
+[INFO] T3 commits
+[INFO] T2 writes x3: 20 to site(s): 4
+[WAKE_UP_OP] (Time:10 Action.WRITE Txn:1 Var:2 Write_var_val:10)
 [INFO] T2 commits
+[INFO] T1 writes x2: 10 to site(s): 1 2 3 4 5 6 7 8 9 10
+[INFO] T1 commits
+site 1 - x2: 10, x4: 30, x6: 60, x8: 80, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
+site 2 - x1: 10, x2: 10, x4: 30, x6: 60, x8: 80, x10: 100, x11: 110, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
+site 3 - x2: 10, x4: 30, x6: 60, x8: 80, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
+site 4 - x2: 10, x3: 20, x4: 30, x6: 60, x8: 80, x10: 100, x12: 120, x13: 130, x14: 140, x16: 160, x18: 180, x20: 200
+site 5 - x2: 10, x4: 30, x6: 60, x8: 80, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
+site 6 - x2: 10, x4: 30, x5: 40, x6: 60, x8: 80, x10: 100, x12: 120, x14: 140, x15: 150, x16: 160, x18: 180, x20: 200
+site 7 - x2: 10, x4: 30, x6: 60, x8: 80, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
+site 8 - x2: 10, x4: 30, x6: 60, x7: 70, x8: 80, x10: 100, x12: 120, x14: 140, x16: 160, x17: 170, x18: 180, x20: 200
+site 9 - x2: 10, x4: 30, x6: 60, x8: 80, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x20: 200
+site 10 - x2: 10, x4: 30, x6: 60, x8: 80, x9: 90, x10: 100, x12: 120, x14: 140, x16: 160, x18: 180, x19: 190, x20: 200

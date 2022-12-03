@@ -1,4 +1,3 @@
-// Test 18
 // A circular deadlock scenario
 // T5 as the youngest will abort, allowing T4 to complete, then T3, T2, and T1.
 // Only T5s write will not succeed. All others will succeed
@@ -22,3 +21,4 @@ end(T4)
 end(T3)
 end(T2)
 end(T1)
+dump()

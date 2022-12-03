@@ -1,7 +1,6 @@
-// Test 19
 // An almost circular deadlock scenario with failures.
-// T3 fails 
-// because site 4 fails after T3 accesses that site.
+// T3 fails (T2 and T4 do not fail because the site is up when they execute)
+// because site 4 fails.
 // All others succeed.
 
 begin(T1)
@@ -12,9 +11,7 @@ begin(T5)
 R(T3,x3)
 fail(4)
 recover(4)
-R(T4,x4) // This reads from a site other than site 4,
-         // because site 4 doesn't have an updated copy of 
-         // replicated variable x4
+R(T4,x4)
 R(T5,x5)
 R(T1,x6)
 R(T2,x2)
@@ -28,3 +25,4 @@ end(T4)
 end(T3)
 end(T2)
 end(T1)
+dump()
