@@ -33,7 +33,7 @@ Make sure the `python` command refers to Python version 3.
     * output files will be generated in the `outputs` directory
 
 * unzip and run reprounzip file
-    * unzip: `./reprounzip directory setup RepCRec.rpz ~/yourDirectoryName`
-    * run: `./reprounzip directory run ~/yourDirectoryName`
-    * it will run test1 ~ test24 in the `inputs` directory
-    * output files will be generated in the `outputs` directory
+    * unzip: `./reprounzip directory setup repro_file.rpz ./your_directory_name`
+    * run: `./reprounzip directory run ./your_directory_name < text_input_file_name`
+    * it will run the program with the input file `text_input_file_name`
+    * the logs and dump results are printed to the standard output
