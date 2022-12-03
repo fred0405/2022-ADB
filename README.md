@@ -19,17 +19,21 @@ Python 3
 ![](Designgraph.png)
 
 ## How To Run
+Make sure the `python` command refers to Python version 3.
+* run with interactive input
+  * `python src/main.py`
+  * then type the instructions to be executed and press enter
 
-* run test1 ~ test21 in the `inputs` directory
-    * use this command: `./runit.sh`
+* run with a single input file
+    * `python src/main.py < ./inputs/test1.txt > ./outputs/test1.txt_out`
+
+* run a batch of input files
+    * run the batch script `./runit.sh`
+    * it will run the test files `test1 ~ test21` in the `inputs` directory
     * output files will be generated in the `outputs` directory
 
-* run certain test
-    * use this command: `python main.py < ./inputs/test1.txt > ./outputs/test1.txt_out`
-    * output file `test1.txt_out` will be generated in the `outputs` directory
-
 * unzip and run reprounzip file
-    * use this command to unzip: `./reprounzip directory setup RepCRec.rpz ~/yourDesiredDirectoryName`
-    * use this command to run: `./reprounzip directory run ~/yourDesiredDirectoryName`
+    * unzip: `./reprounzip directory setup RepCRec.rpz ~/yourDirectoryName`
+    * run: `./reprounzip directory run ~/yourDirectoryName`
     * it will run test1 ~ test24 in the `inputs` directory
     * output files will be generated in the `outputs` directory
